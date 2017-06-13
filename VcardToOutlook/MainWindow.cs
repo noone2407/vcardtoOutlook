@@ -91,11 +91,15 @@ namespace VcardToOutlook
                 {
                     flagend = true;
                 }
-                if (text4.StartsWith("N:"))
+                if (text4.StartsWith("N:")) // name
                 {
                     text4 = "N;CHARSET=utf-8:" + text4.Substring(2);
                 }
-                if (text4.StartsWith("FN:"))
+                if (text4.StartsWith("ORG:")) //company
+                {
+                    text4 = "ORG;CHARSET=utf-8:" + text4.Substring(4);
+                }
+                if (text4.StartsWith("FN:")) //full name
                 {
                     name = text4.Substring(3);
                     name = CleanFileName(name);
@@ -109,11 +113,23 @@ namespace VcardToOutlook
                 {
                     if (string.IsNullOrWhiteSpace(name))
                     {
-                        int noNameCount = Directory.GetFiles(OutputFolder, "Noname_*", SearchOption.TopDirectoryOnly).Length;
+                        int noNameCount = Directory.GetFiles(OutputFolder, "Noname_*.vcf", SearchOption.TopDirectoryOnly).Length;
                         name = "Noname_" + noNameCount.ToString();
+                    }
+                    else
+                    {
+                        int fileCount = Directory.GetFiles(OutputFolder, name + ".vcf", SearchOption.TopDirectoryOnly).Length;
+                        int filewithnumberCount = Directory.GetFiles(OutputFolder, name + "_*.vcf", SearchOption.TopDirectoryOnly).Length;
+                        int total = fileCount + filewithnumberCount;
+                        if (total > 0)
+                            name = name + "_" + total.ToString();
                     }
                     filename = name + ".vcf";
                     string filePath = Path.Combine(OutputFolder, filename);
+                    if (File.Exists(filePath))
+                    {
+                        MessageBox.Show(filePath);
+                    }
                     File.WriteAllText(filePath, textData);
                     flabegin = false;
                     flagend = false;
@@ -134,7 +150,6 @@ namespace VcardToOutlook
             string folderPath = App.Session.DefaultStore.GetRootFolder().FolderPath + @"\Contacts\Key Contacts";
             Outlook.Folder folder = GetFolder(folderPath);
             ImportContacts(OutputFolder, folder);
-            App.Quit();
         }
 
         private void buttonAbout_Click(object sender, EventArgs e)
@@ -202,7 +217,7 @@ namespace VcardToOutlook
             return newFileName;
         }
 
-  
-    
+
+
     }
 }
