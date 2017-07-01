@@ -1,11 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
-using Outlook = Microsoft.Office.Interop.Outlook;
+using OutlookApi;
+using NetOffice;
+using Outlook = NetOffice.OutlookApi;
+using NetOffice.OutlookApi.Enums;
+using Office = NetOffice.OfficeApi;
+using NetOffice.OfficeApi.Enums;
 namespace VcardToOutlook
 {
     public partial class MainWindow : Form
     {
+
         Outlook.Application App;
         string ContactFolder = "C:\\Contacts\\";
         public MainWindow()
@@ -22,8 +28,7 @@ namespace VcardToOutlook
 
         private void buttonSelectSource_Click(object sender, EventArgs e)
         {
-            var ofdSource = new OpenFileDialog();
-            ofdSource.Filter = "Vcf file|*.vcf";
+            var ofdSource = new OpenFileDialog { Filter = "Vcf file|*.vcf" };
             if (ofdSource.ShowDialog() == DialogResult.OK)
             {
                 textBoxInput.Text = ofdSource.FileName;
@@ -194,7 +199,7 @@ namespace VcardToOutlook
                 {
                     for (int i = 1; i <= folders.GetUpperBound(0); i++)
                     {
-                        Outlook.Folders subFolders = folder.Folders;
+                        var subFolders = folder.Folders;
                         folder = subFolders[folders[i]] as Outlook.Folder;
                         if (folder == null)
                         {
