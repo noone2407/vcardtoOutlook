@@ -215,7 +215,7 @@
             // linkLabelWebsite
             // 
             this.linkLabelWebsite.AutoSize = true;
-            this.linkLabelWebsite.Location = new System.Drawing.Point(239, 123);
+            this.linkLabelWebsite.Location = new System.Drawing.Point(321, 297);
             this.linkLabelWebsite.Name = "linkLabelWebsite";
             this.linkLabelWebsite.Size = new System.Drawing.Size(90, 13);
             this.linkLabelWebsite.TabIndex = 13;
