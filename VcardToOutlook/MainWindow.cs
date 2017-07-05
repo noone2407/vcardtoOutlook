@@ -1,18 +1,19 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
-using OutlookApi;
-using NetOffice;
-using Outlook = NetOffice.OutlookApi;
 using NetOffice.OutlookApi.Enums;
-using Office = NetOffice.OfficeApi;
-using NetOffice.OfficeApi.Enums;
+using VcardToOutlook.Properties;
+using Outlook = NetOffice.OutlookApi;
+
 namespace VcardToOutlook
 {
     public partial class MainWindow : Form
     {
 
-        Outlook.Application App;
         string ContactFolder = "C:\\Contacts\\";
         public MainWindow()
         {
@@ -28,7 +29,7 @@ namespace VcardToOutlook
 
         private void buttonSelectSource_Click(object sender, EventArgs e)
         {
-            var ofdSource = new OpenFileDialog { Filter = "Vcf file|*.vcf" };
+            var ofdSource = new OpenFileDialog { Filter = Resources.VcfFilter };
             if (ofdSource.ShowDialog() == DialogResult.OK)
             {
                 textBoxInput.Text = ofdSource.FileName;
@@ -44,16 +45,19 @@ namespace VcardToOutlook
             }
         }
 
-        private void buttonClearFolder_Click(object sender, EventArgs e)
+        private void ClearOldVcfFiles(string folder)
         {
-            DirectoryInfo di = new DirectoryInfo(ContactFolder);
+            DirectoryInfo di = new DirectoryInfo(folder);
             foreach (FileInfo file in di.GetFiles())
             {
                 try
                 {
                     file.Delete();
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                }
             }
             foreach (DirectoryInfo dir in di.GetDirectories())
             {
@@ -61,30 +65,59 @@ namespace VcardToOutlook
                 {
                     dir.Delete(true);
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                }
             }
         }
 
         private void buttonCut_Click(object sender, EventArgs e)
         {
             string inputFile = textBoxInput.Text;
-            string OutputFolder = textBoxOutput.Text;
-
+            string outputFolder = textBoxOutput.Text;
             if (!File.Exists(inputFile)) return;
-            if (!Directory.Exists(OutputFolder)) return;
+            if (!Directory.Exists(outputFolder)) return;
+            bool clearOldVcfFiles = checkBoxClearOldVcf.Checked;
+            progressBar.Visible = true;
+            progressBar.Value = 0;
+            progressBar.Minimum = 0;
+            progressBar.Maximum = 100;
+            var backgroundWorker = new BackgroundWorker()
+            {
+                WorkerReportsProgress = true
+            };
+            backgroundWorker.DoWork += (o, args) =>
+            {
+                if (clearOldVcfFiles)
+                    ClearOldVcfFiles(outputFolder);
+                int counter = CutVcf(backgroundWorker, inputFile, outputFolder);
+                args.Result = counter;
+            };
+            backgroundWorker.ProgressChanged += (o, args) =>
+            {
+                progressBar.Value = args.ProgressPercentage;
+            };
+            backgroundWorker.RunWorkerCompleted += (o, args) =>
+            {
+                progressBar.Value = 100;
+                MessageBox.Show("Your VCard was split into " + args.Result + " files.", "Success", MessageBoxButtons.OK);
+                progressBar.Visible = false;
+            };
+            backgroundWorker.RunWorkerAsync();
+        }
 
+        private int CutVcf(BackgroundWorker backgroundWorker, string inputFile, string outputFolder)
+        {
 
             string textData = string.Empty;
             string name = string.Empty;
-            string filename = string.Empty;
             bool flabegin = false;
             bool flagend = false;
             int counter = 0;
 
             string[] allLines = File.ReadAllLines(inputFile);
-            progressBar.Visible = true;
-            progressBar.Value = 0;
-            progressBar.Maximum = allLines.Length;
+
             for (int i = 0; i < allLines.Length; i++)
             {
                 string text4 = allLines[i];
@@ -118,111 +151,114 @@ namespace VcardToOutlook
                 {
                     if (string.IsNullOrWhiteSpace(name))
                     {
-                        int noNameCount = Directory.GetFiles(OutputFolder, "Noname_*.vcf", SearchOption.TopDirectoryOnly).Length;
+                        int noNameCount = Directory.GetFiles(outputFolder, "Noname_*.vcf", SearchOption.TopDirectoryOnly).Length;
                         name = "Noname_" + noNameCount.ToString();
                     }
                     else
                     {
-                        int fileCount = Directory.GetFiles(OutputFolder, name + ".vcf", SearchOption.TopDirectoryOnly).Length;
-                        int filewithnumberCount = Directory.GetFiles(OutputFolder, name + "_*.vcf", SearchOption.TopDirectoryOnly).Length;
+                        int fileCount = Directory.GetFiles(outputFolder, name + ".vcf", SearchOption.TopDirectoryOnly).Length;
+                        int filewithnumberCount = Directory.GetFiles(outputFolder, name + "_*.vcf", SearchOption.TopDirectoryOnly).Length;
                         int total = fileCount + filewithnumberCount;
                         if (total > 0)
                             name = name + "_" + total.ToString();
                     }
-                    filename = name + ".vcf";
-                    string filePath = Path.Combine(OutputFolder, filename);
-                    if (File.Exists(filePath))
-                    {
-                        MessageBox.Show(filePath);
-                    }
+                    string filename = name + ".vcf";
+                    string filePath = Path.Combine(outputFolder, filename);
                     File.WriteAllText(filePath, textData);
                     flabegin = false;
                     flagend = false;
                     textData = string.Empty;
                     name = string.Empty;
-                    filename = string.Empty;
                     counter++;
                 }
+                backgroundWorker.ReportProgress(i * 100 / allLines.Length);
             }
-            MessageBox.Show("Your VCard was split into " + counter.ToString() + " files.", "Success", MessageBoxButtons.OK);
-            progressBar.Visible = false;
+            return counter;
         }
-
         private void buttonImport_Click(object sender, EventArgs e)
         {
-            string OutputFolder = textBoxOutput.Text;
-            App = new Outlook.Application();
-            string folderPath = App.Session.DefaultStore.GetRootFolder().FolderPath + @"\Contacts\Key Contacts";
-            Outlook.Folder folder = GetFolder(folderPath);
-            ImportContacts(OutputFolder, folder);
-        }
+            string outputFolder = textBoxOutput.Text;
+            bool clearOldContact = checkBoxClearOldContact.Checked;
+            progressBar.Visible = true;
+            progressBar.Value = 0;
+            progressBar.Minimum = 0;
+            progressBar.Maximum = 100;
+            var backgroundWorker = new BackgroundWorker()
+            {
+                WorkerReportsProgress = true
+            };
+            backgroundWorker.DoWork += (o, args) =>
+            {
+                var outlookApplication = new Outlook.Application();
+                if (clearOldContact)
+                    ClearOldContact(outlookApplication);
+                int counter = ImportContacts(backgroundWorker, outlookApplication, outputFolder);
+                // close outlook and dispose
+                args.Result = counter;
+            };
+            backgroundWorker.ProgressChanged += (o, args) =>
+            {
+                progressBar.Value = args.ProgressPercentage;
+            };
+            backgroundWorker.RunWorkerCompleted += (o, args) =>
+            {
+                progressBar.Value = 100;
+                MessageBox.Show(string.Format("Imported {0}contact(s) to outlook.", args.Result), "Success", MessageBoxButtons.OK);
+                progressBar.Visible = false;
+            };
+            backgroundWorker.RunWorkerAsync();
 
+
+        }
         private void buttonAbout_Click(object sender, EventArgs e)
         {
             var about = new About();
             about.ShowDialog();
         }
 
-        private void ImportContacts(string path, Outlook.Folder targetFolder)
+        private int ImportContacts(BackgroundWorker backgroundWorker, Outlook.Application outlookApplication, string path)
         {
-            Outlook.ContactItem contact;
-            progressBar.Visible = true;
-            progressBar.Value = 0;
+            int counter = 0;
             if (Directory.Exists(path))
             {
                 string[] files = Directory.GetFiles(path, "*.vcf");
-                progressBar.Maximum = files.Length;
-                int counter = 0;
-                foreach (string file in files)
+                for (int i = 0; i < files.Length; i++)
                 {
-                    contact = App.Session.OpenSharedItem(file) as Outlook.ContactItem;
-                    contact.Save();
-                    counter++;
-                }
-                MessageBox.Show(string.Format("Imported {0}contact(s) to outlook.", counter.ToString()), "Success", MessageBoxButtons.OK);
-                progressBar.Visible = false;
-            }
-        }
-        private Outlook.Folder GetFolder(string folderPath)
-        {
-            Outlook.Folder folder;
-            string backslash = @"\";
-            try
-            {
-                if (folderPath.StartsWith(@"\\"))
-                {
-                    folderPath = folderPath.Remove(0, 2);
-                }
-                String[] folders = folderPath.Split(backslash.ToCharArray());
-                folder = App.Session.Folders[folders[0]] as Outlook.Folder;
-                if (folder != null)
-                {
-                    for (int i = 1; i <= folders.GetUpperBound(0); i++)
+                    var contact = outlookApplication.Session.OpenSharedItem(files[i]) as Outlook.ContactItem;
+                    if (contact != null)
                     {
-                        var subFolders = folder.Folders;
-                        folder = subFolders[folders[i]] as Outlook.Folder;
-                        if (folder == null)
-                        {
-                            return null;
-                        }
+                        contact.Save();
+                        counter++;
                     }
+                    backgroundWorker.ReportProgress(i * 100 / files.Length);
                 }
-                return folder;
             }
-            catch { return null; }
+            return counter;
         }
+
+        private void ClearOldContact(Outlook.Application outlookApplication)
+        {
+            Outlook.MAPIFolder contactFolder = outlookApplication.Session.GetDefaultFolder(OlDefaultFolders.olFolderContacts);
+            int total = contactFolder.Items.Count;
+            while (total > 0)
+            {
+                var contact = (Outlook.ContactItem)contactFolder.Items[1];
+                contact.Delete();
+                total = contactFolder.Items.Count;
+            }
+        }
+
+
         private static string CleanFileName(string fileName)
         {
             string newFileName = fileName;
             var invalidChars = Path.GetInvalidFileNameChars();
-            foreach (char c in invalidChars)
-            {
-                newFileName = newFileName.Replace(c.ToString(), "");
-            }
-            return newFileName;
+            return invalidChars.Aggregate(newFileName, (current, c) => current.Replace(c.ToString(), ""));
         }
 
-
-
+        private void linkLabelWebsite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("http://bbhcm.vn");
+        }
     }
 }

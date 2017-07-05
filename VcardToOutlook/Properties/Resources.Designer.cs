@@ -99,5 +99,14 @@ namespace VcardToOutlook.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vcf file|*.vcf.
+        /// </summary>
+        internal static string VcfFilter {
+            get {
+                return ResourceManager.GetString("VcfFilter", resourceCulture);
+            }
+        }
     }
 }

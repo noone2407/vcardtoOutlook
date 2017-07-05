@@ -37,14 +37,16 @@
             this.textBoxOutput = new System.Windows.Forms.TextBox();
             this.textBoxInput = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.buttonSelectTarget = new System.Windows.Forms.Button();
+            this.buttonSelectSource = new System.Windows.Forms.Button();
             this.buttonImport = new System.Windows.Forms.Button();
             this.buttonAbout = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.buttonCut = new System.Windows.Forms.Button();
-            this.buttonSelectTarget = new System.Windows.Forms.Button();
-            this.buttonSelectSource = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.buttonClearFolder = new System.Windows.Forms.Button();
+            this.checkBoxClearOldVcf = new System.Windows.Forms.CheckBox();
+            this.checkBoxClearOldContact = new System.Windows.Forms.CheckBox();
+            this.linkLabelWebsite = new System.Windows.Forms.LinkLabel();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -61,24 +63,23 @@
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(225, 46);
+            this.label2.Location = new System.Drawing.Point(186, 46);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(203, 47);
+            this.label2.Size = new System.Drawing.Size(225, 47);
             this.label2.TabIndex = 3;
             this.label2.Text = "Select a VCF file and then click on \'Cut\' to split it into individual VCF files. " +
     "Then you can copy them to your phone.";
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(222, 93);
+            this.label4.Location = new System.Drawing.Point(183, 93);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(200, 32);
+            this.label4.Size = new System.Drawing.Size(222, 32);
             this.label4.TabIndex = 5;
             this.label4.Text = "You can also import to outlook with one-click.";
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.buttonClearFolder);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.textBoxOutput);
             this.groupBox1.Controls.Add(this.textBoxInput);
@@ -105,7 +106,7 @@
             // 
             this.textBoxOutput.Location = new System.Drawing.Point(19, 81);
             this.textBoxOutput.Name = "textBoxOutput";
-            this.textBoxOutput.Size = new System.Drawing.Size(306, 20);
+            this.textBoxOutput.Size = new System.Drawing.Size(334, 20);
             this.textBoxOutput.TabIndex = 5;
             // 
             // textBoxInput
@@ -124,49 +125,10 @@
             this.label5.TabIndex = 2;
             this.label5.Text = "Source (Original vCard File)";
             // 
-            // buttonImport
-            // 
-            this.buttonImport.Location = new System.Drawing.Point(103, 264);
-            this.buttonImport.Name = "buttonImport";
-            this.buttonImport.Size = new System.Drawing.Size(70, 35);
-            this.buttonImport.TabIndex = 8;
-            this.buttonImport.Text = "Import";
-            this.buttonImport.UseVisualStyleBackColor = true;
-            this.buttonImport.Click += new System.EventHandler(this.buttonImport_Click);
-            // 
-            // buttonAbout
-            // 
-            this.buttonAbout.Location = new System.Drawing.Point(341, 264);
-            this.buttonAbout.Name = "buttonAbout";
-            this.buttonAbout.Size = new System.Drawing.Size(70, 35);
-            this.buttonAbout.TabIndex = 9;
-            this.buttonAbout.Text = "About";
-            this.buttonAbout.UseVisualStyleBackColor = true;
-            this.buttonAbout.Click += new System.EventHandler(this.buttonAbout_Click);
-            // 
-            // progressBar
-            // 
-            this.progressBar.Location = new System.Drawing.Point(180, 276);
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(155, 23);
-            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar.TabIndex = 10;
-            this.progressBar.Visible = false;
-            // 
-            // buttonCut
-            // 
-            this.buttonCut.Location = new System.Drawing.Point(22, 264);
-            this.buttonCut.Name = "buttonCut";
-            this.buttonCut.Size = new System.Drawing.Size(70, 35);
-            this.buttonCut.TabIndex = 7;
-            this.buttonCut.Text = "Cut";
-            this.buttonCut.UseVisualStyleBackColor = true;
-            this.buttonCut.Click += new System.EventHandler(this.buttonCut_Click);
-            // 
             // buttonSelectTarget
             // 
             this.buttonSelectTarget.Image = global::VcardToOutlook.Properties.Resources.output;
-            this.buttonSelectTarget.Location = new System.Drawing.Point(331, 78);
+            this.buttonSelectTarget.Location = new System.Drawing.Point(359, 78);
             this.buttonSelectTarget.Name = "buttonSelectTarget";
             this.buttonSelectTarget.Size = new System.Drawing.Size(24, 23);
             this.buttonSelectTarget.TabIndex = 4;
@@ -183,30 +145,92 @@
             this.buttonSelectSource.UseVisualStyleBackColor = true;
             this.buttonSelectSource.Click += new System.EventHandler(this.buttonSelectSource_Click);
             // 
+            // buttonImport
+            // 
+            this.buttonImport.Location = new System.Drawing.Point(139, 288);
+            this.buttonImport.Name = "buttonImport";
+            this.buttonImport.Size = new System.Drawing.Size(70, 22);
+            this.buttonImport.TabIndex = 8;
+            this.buttonImport.Text = "Import";
+            this.buttonImport.UseVisualStyleBackColor = true;
+            this.buttonImport.Click += new System.EventHandler(this.buttonImport_Click);
+            // 
+            // buttonAbout
+            // 
+            this.buttonAbout.Location = new System.Drawing.Point(335, 114);
+            this.buttonAbout.Name = "buttonAbout";
+            this.buttonAbout.Size = new System.Drawing.Size(70, 22);
+            this.buttonAbout.TabIndex = 9;
+            this.buttonAbout.Text = "About";
+            this.buttonAbout.UseVisualStyleBackColor = true;
+            this.buttonAbout.Click += new System.EventHandler(this.buttonAbout_Click);
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(215, 264);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(196, 22);
+            this.progressBar.TabIndex = 10;
+            this.progressBar.Visible = false;
+            // 
+            // buttonCut
+            // 
+            this.buttonCut.Location = new System.Drawing.Point(139, 264);
+            this.buttonCut.Name = "buttonCut";
+            this.buttonCut.Size = new System.Drawing.Size(70, 22);
+            this.buttonCut.TabIndex = 7;
+            this.buttonCut.Text = "Cut";
+            this.buttonCut.UseVisualStyleBackColor = true;
+            this.buttonCut.Click += new System.EventHandler(this.buttonCut_Click);
+            // 
             // pictureBox1
             // 
             this.pictureBox1.Image = global::VcardToOutlook.Properties.Resources.Microsoft_outlook;
             this.pictureBox1.Location = new System.Drawing.Point(22, 22);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(193, 103);
+            this.pictureBox1.Size = new System.Drawing.Size(158, 103);
             this.pictureBox1.TabIndex = 2;
             this.pictureBox1.TabStop = false;
             // 
-            // buttonClearFolder
+            // checkBoxClearOldVcf
             // 
-            this.buttonClearFolder.Image = global::VcardToOutlook.Properties.Resources.delete;
-            this.buttonClearFolder.Location = new System.Drawing.Point(361, 78);
-            this.buttonClearFolder.Name = "buttonClearFolder";
-            this.buttonClearFolder.Size = new System.Drawing.Size(24, 23);
-            this.buttonClearFolder.TabIndex = 7;
-            this.buttonClearFolder.UseVisualStyleBackColor = true;
-            this.buttonClearFolder.Click += new System.EventHandler(this.buttonClearFolder_Click);
+            this.checkBoxClearOldVcf.AutoSize = true;
+            this.checkBoxClearOldVcf.Location = new System.Drawing.Point(22, 269);
+            this.checkBoxClearOldVcf.Name = "checkBoxClearOldVcf";
+            this.checkBoxClearOldVcf.Size = new System.Drawing.Size(112, 17);
+            this.checkBoxClearOldVcf.TabIndex = 11;
+            this.checkBoxClearOldVcf.Text = "Clear Old Vcf Files";
+            this.checkBoxClearOldVcf.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxClearOldContact
+            // 
+            this.checkBoxClearOldContact.AutoSize = true;
+            this.checkBoxClearOldContact.Location = new System.Drawing.Point(22, 292);
+            this.checkBoxClearOldContact.Name = "checkBoxClearOldContact";
+            this.checkBoxClearOldContact.Size = new System.Drawing.Size(109, 17);
+            this.checkBoxClearOldContact.TabIndex = 12;
+            this.checkBoxClearOldContact.Text = "Clear Old Contact";
+            this.checkBoxClearOldContact.UseVisualStyleBackColor = true;
+            // 
+            // linkLabelWebsite
+            // 
+            this.linkLabelWebsite.AutoSize = true;
+            this.linkLabelWebsite.Location = new System.Drawing.Point(239, 123);
+            this.linkLabelWebsite.Name = "linkLabelWebsite";
+            this.linkLabelWebsite.Size = new System.Drawing.Size(90, 13);
+            this.linkLabelWebsite.TabIndex = 13;
+            this.linkLabelWebsite.TabStop = true;
+            this.linkLabelWebsite.Text = "http://bbhcm.vn/";
+            this.linkLabelWebsite.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelWebsite_LinkClicked);
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(423, 303);
+            this.ClientSize = new System.Drawing.Size(423, 319);
+            this.Controls.Add(this.linkLabelWebsite);
+            this.Controls.Add(this.checkBoxClearOldContact);
+            this.Controls.Add(this.checkBoxClearOldVcf);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.buttonAbout);
             this.Controls.Add(this.buttonImport);
@@ -248,7 +272,9 @@
         private System.Windows.Forms.Button buttonImport;
         private System.Windows.Forms.Button buttonAbout;
         private System.Windows.Forms.ProgressBar progressBar;
-        private System.Windows.Forms.Button buttonClearFolder;
+        private System.Windows.Forms.CheckBox checkBoxClearOldVcf;
+        private System.Windows.Forms.CheckBox checkBoxClearOldContact;
+        private System.Windows.Forms.LinkLabel linkLabelWebsite;
     }
 }
 
