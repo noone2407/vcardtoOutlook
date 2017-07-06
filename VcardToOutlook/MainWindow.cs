@@ -79,10 +79,7 @@ namespace VcardToOutlook
             if (!File.Exists(inputFile)) return;
             if (!Directory.Exists(outputFolder)) return;
             bool clearOldVcfFiles = checkBoxClearOldVcf.Checked;
-            progressBar.Visible = true;
-            progressBar.Value = 0;
-            progressBar.Minimum = 0;
-            progressBar.Maximum = 100;
+            ResetProgressbar();
             var backgroundWorker = new BackgroundWorker()
             {
                 WorkerReportsProgress = true
@@ -179,10 +176,7 @@ namespace VcardToOutlook
         {
             string outputFolder = textBoxOutput.Text;
             bool clearOldContact = checkBoxClearOldContact.Checked;
-            progressBar.Visible = true;
-            progressBar.Value = 0;
-            progressBar.Minimum = 0;
-            progressBar.Maximum = 100;
+            ResetProgressbar();
             var backgroundWorker = new BackgroundWorker()
             {
                 WorkerReportsProgress = true
@@ -191,9 +185,8 @@ namespace VcardToOutlook
             {
                 var outlookApplication = new Outlook.Application();
                 if (clearOldContact)
-                    ClearOldContact(outlookApplication);
+                    ClearOldContact(backgroundWorker,outlookApplication);
                 int counter = ImportContacts(backgroundWorker, outlookApplication, outputFolder);
-                // close outlook and dispose
                 args.Result = counter;
             };
             backgroundWorker.ProgressChanged += (o, args) =>
@@ -207,13 +200,35 @@ namespace VcardToOutlook
                 progressBar.Visible = false;
             };
             backgroundWorker.RunWorkerAsync();
-
-
         }
         private void buttonAbout_Click(object sender, EventArgs e)
         {
             var about = new About();
             about.ShowDialog();
+        }
+        private void ResetProgressbar()
+        {
+            progressBar.Visible = true;
+            progressBar.Value = 0;
+            progressBar.Minimum = 0;
+            progressBar.Maximum = 100;
+        }
+
+        private void ClearOldContact(BackgroundWorker backgroundWorker, Outlook.Application outlookApplication)
+        {
+            Outlook.MAPIFolder contactFolder = outlookApplication.Session.GetDefaultFolder(OlDefaultFolders.olFolderContacts);
+            int total = contactFolder.Items.Count;
+            int remaining = total;
+            int deleted = 0;
+            while (remaining > 0)
+            {
+                var contact = (Outlook.ContactItem)contactFolder.Items[1];
+                contact.Delete();
+                Thread.Sleep(100);
+                deleted++;
+                remaining = contactFolder.Items.Count;
+                backgroundWorker.ReportProgress(deleted * 100 / total);
+            }
         }
 
         private int ImportContacts(BackgroundWorker backgroundWorker, Outlook.Application outlookApplication, string path)
@@ -235,19 +250,6 @@ namespace VcardToOutlook
             }
             return counter;
         }
-
-        private void ClearOldContact(Outlook.Application outlookApplication)
-        {
-            Outlook.MAPIFolder contactFolder = outlookApplication.Session.GetDefaultFolder(OlDefaultFolders.olFolderContacts);
-            int total = contactFolder.Items.Count;
-            while (total > 0)
-            {
-                var contact = (Outlook.ContactItem)contactFolder.Items[1];
-                contact.Delete();
-                total = contactFolder.Items.Count;
-            }
-        }
-
 
         private static string CleanFileName(string fileName)
         {
