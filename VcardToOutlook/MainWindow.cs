@@ -45,33 +45,6 @@ namespace VcardToOutlook
             }
         }
 
-        private void ClearOldVcfFiles(string folder)
-        {
-            DirectoryInfo di = new DirectoryInfo(folder);
-            foreach (FileInfo file in di.GetFiles())
-            {
-                try
-                {
-                    file.Delete();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.ToString());
-                }
-            }
-            foreach (DirectoryInfo dir in di.GetDirectories())
-            {
-                try
-                {
-                    dir.Delete(true);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.ToString());
-                }
-            }
-        }
-
         private void buttonCut_Click(object sender, EventArgs e)
         {
             string inputFile = textBoxInput.Text;
@@ -87,7 +60,7 @@ namespace VcardToOutlook
             backgroundWorker.DoWork += (o, args) =>
             {
                 if (clearOldVcfFiles)
-                    ClearOldVcfFiles(outputFolder);
+                    ClearOldVcfFiles(backgroundWorker,outputFolder);
                 int counter = CutVcf(backgroundWorker, inputFile, outputFolder);
                 args.Result = counter;
             };
@@ -102,6 +75,24 @@ namespace VcardToOutlook
                 progressBar.Visible = false;
             };
             backgroundWorker.RunWorkerAsync();
+        }
+        private void ClearOldVcfFiles(BackgroundWorker backgroundWorker, string folder)
+        {
+            DirectoryInfo di = new DirectoryInfo(folder);
+           var files = di.GetFiles();
+            for (int i = 0; i< files.Length; i++)
+            {
+                try
+                {
+                    files[i].Delete();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                }
+                Thread.Sleep(10);
+                backgroundWorker.ReportProgress(i * 100 / files.Length);
+            }
         }
 
         private int CutVcf(BackgroundWorker backgroundWorker, string inputFile, string outputFolder)
@@ -168,6 +159,7 @@ namespace VcardToOutlook
                     name = string.Empty;
                     counter++;
                 }
+                Thread.Sleep(10);
                 backgroundWorker.ReportProgress(i * 100 / allLines.Length);
             }
             return counter;
@@ -224,7 +216,7 @@ namespace VcardToOutlook
             {
                 var contact = (Outlook.ContactItem)contactFolder.Items[1];
                 contact.Delete();
-                Thread.Sleep(100);
+                Thread.Sleep(10);
                 deleted++;
                 remaining = contactFolder.Items.Count;
                 backgroundWorker.ReportProgress(deleted * 100 / total);
@@ -245,6 +237,7 @@ namespace VcardToOutlook
                         contact.Save();
                         counter++;
                     }
+                    Thread.Sleep(10);
                     backgroundWorker.ReportProgress(i * 100 / files.Length);
                 }
             }
