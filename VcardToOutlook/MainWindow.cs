@@ -23,6 +23,7 @@ namespace VcardToOutlook
         private void MainWindow_Load(object sender, EventArgs e)
         {
             textBoxOutput.Text = ContactFolder;
+            label6.Text = "";
             if (!Directory.Exists(ContactFolder))
                 Directory.CreateDirectory(ContactFolder);
         }
@@ -90,7 +91,6 @@ namespace VcardToOutlook
                 {
                     Debug.WriteLine(ex.ToString());
                 }
-                Thread.Sleep(10);
                 backgroundWorker.ReportProgress(i * 100 / files.Length);
             }
         }
@@ -159,7 +159,6 @@ namespace VcardToOutlook
                     name = string.Empty;
                     counter++;
                 }
-                Thread.Sleep(10);
                 backgroundWorker.ReportProgress(i * 100 / allLines.Length);
             }
             return counter;
@@ -216,7 +215,6 @@ namespace VcardToOutlook
             {
                 var contact = (Outlook.ContactItem)contactFolder.Items[1];
                 contact.Delete();
-                Thread.Sleep(10);
                 deleted++;
                 remaining = contactFolder.Items.Count;
                 backgroundWorker.ReportProgress(deleted * 100 / total);
@@ -237,7 +235,6 @@ namespace VcardToOutlook
                         contact.Save();
                         counter++;
                     }
-                    Thread.Sleep(10);
                     backgroundWorker.ReportProgress(i * 100 / files.Length);
                 }
             }
@@ -253,7 +250,7 @@ namespace VcardToOutlook
 
         private void linkLabelWebsite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Process.Start("http://bbhcm.vn");
+            Process.Start("https://bbhcm.vn");
         }
     }
 }
