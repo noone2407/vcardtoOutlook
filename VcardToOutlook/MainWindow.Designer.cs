@@ -91,9 +91,9 @@
             this.groupBox1.Controls.Add(this.buttonSelectTarget);
             this.groupBox1.Controls.Add(this.buttonSelectSource);
             this.groupBox1.Location = new System.Drawing.Point(29, 175);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox1.Size = new System.Drawing.Size(519, 143);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
@@ -112,7 +112,7 @@
             // textBoxOutput
             // 
             this.textBoxOutput.Location = new System.Drawing.Point(25, 100);
-            this.textBoxOutput.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBoxOutput.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxOutput.Name = "textBoxOutput";
             this.textBoxOutput.Size = new System.Drawing.Size(444, 22);
             this.textBoxOutput.TabIndex = 5;
@@ -120,7 +120,7 @@
             // textBoxInput
             // 
             this.textBoxInput.Location = new System.Drawing.Point(25, 41);
-            this.textBoxInput.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBoxInput.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxInput.Name = "textBoxInput";
             this.textBoxInput.Size = new System.Drawing.Size(444, 22);
             this.textBoxInput.TabIndex = 3;
@@ -139,7 +139,7 @@
             // 
             this.buttonSelectTarget.Image = global::VcardToOutlook.Properties.Resources.output;
             this.buttonSelectTarget.Location = new System.Drawing.Point(479, 96);
-            this.buttonSelectTarget.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonSelectTarget.Margin = new System.Windows.Forms.Padding(4);
             this.buttonSelectTarget.Name = "buttonSelectTarget";
             this.buttonSelectTarget.Size = new System.Drawing.Size(32, 28);
             this.buttonSelectTarget.TabIndex = 4;
@@ -150,7 +150,7 @@
             // 
             this.buttonSelectSource.Image = global::VcardToOutlook.Properties.Resources.open;
             this.buttonSelectSource.Location = new System.Drawing.Point(479, 37);
-            this.buttonSelectSource.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonSelectSource.Margin = new System.Windows.Forms.Padding(4);
             this.buttonSelectSource.Name = "buttonSelectSource";
             this.buttonSelectSource.Size = new System.Drawing.Size(32, 28);
             this.buttonSelectSource.TabIndex = 0;
@@ -160,7 +160,7 @@
             // buttonImport
             // 
             this.buttonImport.Location = new System.Drawing.Point(185, 354);
-            this.buttonImport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonImport.Margin = new System.Windows.Forms.Padding(4);
             this.buttonImport.Name = "buttonImport";
             this.buttonImport.Size = new System.Drawing.Size(93, 27);
             this.buttonImport.TabIndex = 8;
@@ -171,7 +171,7 @@
             // buttonAbout
             // 
             this.buttonAbout.Location = new System.Drawing.Point(455, 140);
-            this.buttonAbout.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonAbout.Margin = new System.Windows.Forms.Padding(4);
             this.buttonAbout.Name = "buttonAbout";
             this.buttonAbout.Size = new System.Drawing.Size(93, 27);
             this.buttonAbout.TabIndex = 9;
@@ -182,7 +182,7 @@
             // progressBar
             // 
             this.progressBar.Location = new System.Drawing.Point(287, 353);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(261, 27);
             this.progressBar.TabIndex = 10;
@@ -191,7 +191,7 @@
             // buttonCut
             // 
             this.buttonCut.Location = new System.Drawing.Point(185, 325);
-            this.buttonCut.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonCut.Margin = new System.Windows.Forms.Padding(4);
             this.buttonCut.Name = "buttonCut";
             this.buttonCut.Size = new System.Drawing.Size(93, 27);
             this.buttonCut.TabIndex = 7;
@@ -203,7 +203,7 @@
             // 
             this.pictureBox1.Image = global::VcardToOutlook.Properties.Resources.Microsoft_outlook;
             this.pictureBox1.Location = new System.Drawing.Point(29, 27);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(211, 127);
             this.pictureBox1.TabIndex = 2;
@@ -213,7 +213,7 @@
             // 
             this.checkBoxClearOldVcf.AutoSize = true;
             this.checkBoxClearOldVcf.Location = new System.Drawing.Point(29, 331);
-            this.checkBoxClearOldVcf.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxClearOldVcf.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxClearOldVcf.Name = "checkBoxClearOldVcf";
             this.checkBoxClearOldVcf.Size = new System.Drawing.Size(146, 21);
             this.checkBoxClearOldVcf.TabIndex = 11;
@@ -224,7 +224,7 @@
             // 
             this.checkBoxClearOldContact.AutoSize = true;
             this.checkBoxClearOldContact.Location = new System.Drawing.Point(29, 359);
-            this.checkBoxClearOldContact.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxClearOldContact.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxClearOldContact.Name = "checkBoxClearOldContact";
             this.checkBoxClearOldContact.Size = new System.Drawing.Size(141, 21);
             this.checkBoxClearOldContact.TabIndex = 12;
@@ -237,10 +237,10 @@
             this.linkLabelWebsite.Location = new System.Drawing.Point(331, 150);
             this.linkLabelWebsite.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.linkLabelWebsite.Name = "linkLabelWebsite";
-            this.linkLabelWebsite.Size = new System.Drawing.Size(116, 17);
+            this.linkLabelWebsite.Size = new System.Drawing.Size(112, 17);
             this.linkLabelWebsite.TabIndex = 13;
             this.linkLabelWebsite.TabStop = true;
-            this.linkLabelWebsite.Text = "https://bbhcm.vn/";
+            this.linkLabelWebsite.Text = "https://bbhcm.vn";
             this.linkLabelWebsite.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelWebsite_LinkClicked);
             // 
             // label6
@@ -272,7 +272,7 @@
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.Name = "MainWindow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using NetOffice.OutlookApi.Enums;
@@ -53,6 +56,7 @@ namespace VcardToOutlook
             if (!File.Exists(inputFile)) return;
             if (!Directory.Exists(outputFolder)) return;
             bool clearOldVcfFiles = checkBoxClearOldVcf.Checked;
+
             ResetProgressbar();
             var backgroundWorker = new BackgroundWorker()
             {
@@ -60,9 +64,10 @@ namespace VcardToOutlook
             };
             backgroundWorker.DoWork += (o, args) =>
             {
+                string[] lines = CleanInputFile(inputFile);
                 if (clearOldVcfFiles)
-                    ClearOldVcfFiles(backgroundWorker,outputFolder);
-                int counter = CutVcf(backgroundWorker, inputFile, outputFolder);
+                    ClearOldVcfFiles(backgroundWorker, outputFolder);
+                int counter = CutVcf(backgroundWorker, lines, outputFolder);
                 args.Result = counter;
             };
             backgroundWorker.ProgressChanged += (o, args) =>
@@ -77,11 +82,20 @@ namespace VcardToOutlook
             };
             backgroundWorker.RunWorkerAsync();
         }
+
+        private string[] CleanInputFile(string inputFile)
+        {
+            string text = File.ReadAllText(inputFile);
+            text = text.Replace("=\r\n=", "="); // cut break line of quoted-printable
+            text = text.Replace("\r\n", "\n"); // change crlf to lf
+            return text.Split('\n');
+        }
+
         private void ClearOldVcfFiles(BackgroundWorker backgroundWorker, string folder)
         {
             DirectoryInfo di = new DirectoryInfo(folder);
-           var files = di.GetFiles();
-            for (int i = 0; i< files.Length; i++)
+            var files = di.GetFiles();
+            for (int i = 0; i < files.Length; i++)
             {
                 try
                 {
@@ -95,59 +109,111 @@ namespace VcardToOutlook
             }
         }
 
-        private int CutVcf(BackgroundWorker backgroundWorker, string inputFile, string outputFolder)
+        private int CutVcf(BackgroundWorker backgroundWorker, string[] inputLines, string outputFolder)
         {
-
+            if (inputLines.Length == 0)
+            {
+                return 0;
+            }
             string textData = string.Empty;
             string name = string.Empty;
             bool flabegin = false;
             bool flagend = false;
             int counter = 0;
+            string quotedPrintable = "ENCODING=QUOTED-PRINTABLE:";
 
-            string[] allLines = File.ReadAllLines(inputFile);
-
-            for (int i = 0; i < allLines.Length; i++)
+            for (int i = 0; i < inputLines.Length; i++)
             {
-                string text4 = allLines[i];
-                if (text4 == "BEGIN:VCARD")
+                string line = inputLines[i];
+                if (line == "BEGIN:VCARD")
                 {
                     flabegin = true;
                 }
-                if (text4 == "END:VCARD")
+                if (line == "END:VCARD")
                 {
                     flagend = true;
                 }
-                if (text4.StartsWith("N:")) // name
+                if (line.StartsWith("N;")) // name
                 {
-                    text4 = "N;CHARSET=utf-8:" + text4.Substring(2);
+                    if (line.Contains("ENCODING="))
+                    {
+                        int pos = line.IndexOf(quotedPrintable) + quotedPrintable.Length;
+                        string text = line.Substring(pos).Replace(";", "");
+                        string n = DecodeQuotedPrintables(text, "UTF-8");
+                        line = "N;CHARSET=utf-8:" + n;
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            name = CleanFileName(n);
+                        }
+                    }
                 }
-                if (text4.StartsWith("ORG:")) //company
+                if (line.StartsWith("N:")) // name
                 {
-                    text4 = "ORG;CHARSET=utf-8:" + text4.Substring(4);
-                }
-                if (text4.StartsWith("FN:")) //full name
-                {
-                    name = text4.Substring(3);
+                    name = line.Substring(2).Replace(";", "");
+                    line = "N;CHARSET=utf-8:" + line.Substring(2);
                     name = CleanFileName(name);
-                    text4 = "FN;CHARSET=utf-8:" + text4.Substring(3);
                 }
-                if (flabegin)
+                if (line.StartsWith("FN;")) // full name
                 {
-                    textData = textData + Environment.NewLine + text4;
+                    if (line.Contains("ENCODING="))
+                    {
+                        int pos = line.IndexOf(quotedPrintable) + quotedPrintable.Length;
+                        string text = line.Substring(pos).Replace(";", "");
+                        string fn = DecodeQuotedPrintables(text, "UTF-8");
+                        line = "FN;CHARSET=utf-8:" + fn;
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            name = CleanFileName(fn);
+                        }
+                    }
                 }
-                if (flagend)
+                if (line.StartsWith("FN:")) //full name
                 {
+                    name = line.Substring(3);
+                    line = "FN;CHARSET=utf-8:" + line.Substring(3);
                     if (string.IsNullOrWhiteSpace(name))
+                    {
+                        name = CleanFileName(name);
+                    }
+                }
+                if (line.StartsWith("ORG;")) // company
+                {
+                    if (line.Contains("ENCODING="))
+                    {
+                        int pos = line.IndexOf(quotedPrintable) + quotedPrintable.Length;
+                        string text = line.Substring(pos).Replace(";", "");
+                        line = "ORG;CHARSET=utf-8:" + DecodeQuotedPrintables(text, "UTF-8");
+                    }
+                }
+                if (line.StartsWith("ORG:")) //company
+                {
+                    line = "ORG;CHARSET=utf-8:" + line.Substring(4);
+                }
+                if (flabegin) // begin:vcard 
+                {
+                    if (string.IsNullOrEmpty(textData))
+                    {
+                        textData = line;
+                    }
+                    else
+                    {
+                        textData = textData + Environment.NewLine + line;
+                    }
+
+                }
+                if (flagend)  // end:vcard 
+                {
+                    if (string.IsNullOrWhiteSpace(name)) // emtpy name
                     {
                         int noNameCount = Directory.GetFiles(outputFolder, "Noname_*.vcf", SearchOption.TopDirectoryOnly).Length;
                         name = "Noname_" + noNameCount.ToString();
                     }
-                    else
+                    else  // search for duplicated name
                     {
                         int fileCount = Directory.GetFiles(outputFolder, name + ".vcf", SearchOption.TopDirectoryOnly).Length;
                         int filewithnumberCount = Directory.GetFiles(outputFolder, name + "_*.vcf", SearchOption.TopDirectoryOnly).Length;
                         int total = fileCount + filewithnumberCount;
-                        if (total > 0)
+                        if (total > 0) // add number to duplicated name
                             name = name + "_" + total.ToString();
                     }
                     string filename = name + ".vcf";
@@ -159,7 +225,7 @@ namespace VcardToOutlook
                     name = string.Empty;
                     counter++;
                 }
-                backgroundWorker.ReportProgress(i * 100 / allLines.Length);
+                backgroundWorker.ReportProgress(i * 100 / inputLines.Length);
             }
             return counter;
         }
@@ -176,7 +242,7 @@ namespace VcardToOutlook
             {
                 var outlookApplication = new Outlook.Application();
                 if (clearOldContact)
-                    ClearOldContact(backgroundWorker,outlookApplication);
+                    ClearOldContact(backgroundWorker, outlookApplication);
                 int counter = ImportContacts(backgroundWorker, outlookApplication, outputFolder);
                 args.Result = counter;
             };
@@ -246,6 +312,47 @@ namespace VcardToOutlook
             string newFileName = fileName;
             var invalidChars = Path.GetInvalidFileNameChars();
             return invalidChars.Aggregate(newFileName, (current, c) => current.Replace(c.ToString(), ""));
+        }
+
+        private static string DecodeQuotedPrintables(string input, string charSet)
+        {
+            if (string.IsNullOrEmpty(charSet))
+            {
+                var charSetOccurences = new Regex(@"=\?.*\?Q\?", RegexOptions.IgnoreCase);
+                var charSetMatches = charSetOccurences.Matches(input);
+                foreach (Match match in charSetMatches)
+                {
+                    charSet = match.Groups[0].Value.Replace("=?", "").Replace("?Q?", "");
+                    input = input.Replace(match.Groups[0].Value, "").Replace("?=", "");
+                }
+            }
+
+            Encoding enc = new ASCIIEncoding();
+            if (!string.IsNullOrEmpty(charSet))
+            {
+                try
+                {
+                    enc = Encoding.GetEncoding(charSet);
+                }
+                catch
+                {
+                    enc = new ASCIIEncoding();
+                }
+            }
+            var arr = new List<byte>();
+            foreach (string s in input.Split('='))
+            {
+                arr.AddRange(StringToByteArray(s));
+            }
+            string output = enc.GetString(arr.ToArray());
+            return output;
+        }
+        private static byte[] StringToByteArray(string hex)
+        {
+            return Enumerable.Range(0, hex.Length)
+                             .Where(x => x % 2 == 0)
+                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                             .ToArray();
         }
 
         private void linkLabelWebsite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
