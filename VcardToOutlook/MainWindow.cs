@@ -16,13 +16,31 @@ namespace VcardToOutlook
 {
     public partial class MainWindow : Form
     {
-
+        #region const
         string ContactFolder = "C:\\Contacts\\";
+        readonly string[] sign = new string[] { "á", "à", "ả", "ã", "ạ", "â", "ấ", "ầ", "ẩ", "ẫ", "ậ", "ă", "ắ", "ằ", "ẳ", "ẵ", "ặ",
+            "đ",
+            "é","è","ẻ","ẽ","ẹ","ê","ế","ề","ể","ễ","ệ",
+            "í","ì","ỉ","ĩ","ị",
+            "ó","ò","ỏ","õ","ọ","ô","ố","ồ","ổ","ỗ","ộ","ơ","ớ","ờ","ở","ỡ","ợ",
+            "ú","ù","ủ","ũ","ụ","ư","ứ","ừ","ử","ữ","ự",
+            "ý","ỳ","ỷ","ỹ","ỵ"};
+        readonly string[] nosign = new string[] { "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a",
+            "d",
+            "e","e","e","e","e","e","e","e","e","e","e",
+            "i","i","i","i","i",
+            "o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o",
+            "u","u","u","u","u","u","u","u","u","u","u",
+            "y","y","y","y","y"};
+        #endregion
+
         public MainWindow()
         {
             InitializeComponent();
 
         }
+
+        #region UI Events
         private void MainWindow_Load(object sender, EventArgs e)
         {
             textBoxOutput.Text = ContactFolder;
@@ -48,7 +66,6 @@ namespace VcardToOutlook
                 textBoxOutput.Text = fbdTarget.SelectedPath;
             }
         }
-
         private void buttonCut_Click(object sender, EventArgs e)
         {
             string inputFile = textBoxInput.Text;
@@ -83,6 +100,41 @@ namespace VcardToOutlook
             backgroundWorker.RunWorkerAsync();
         }
 
+        private void buttonImport_Click(object sender, EventArgs e)
+        {
+            string outputFolder = textBoxOutput.Text;
+            bool clearOldContact = checkBoxClearOldContact.Checked;
+            ResetProgressbar();
+            var backgroundWorker = new BackgroundWorker()
+            {
+                WorkerReportsProgress = true
+            };
+            backgroundWorker.DoWork += (o, args) =>
+            {
+                var outlookApplication = new Outlook.Application();
+                if (clearOldContact)
+                    ClearOldContact(backgroundWorker, outlookApplication);
+                int counter = ImportContacts(backgroundWorker, outlookApplication, outputFolder);
+                args.Result = counter;
+            };
+            backgroundWorker.ProgressChanged += (o, args) =>
+            {
+                progressBar.Value = args.ProgressPercentage;
+            };
+            backgroundWorker.RunWorkerCompleted += (o, args) =>
+            {
+                progressBar.Value = 100;
+                MessageBox.Show(string.Format("Imported {0}contact(s) to outlook.", args.Result), "Success", MessageBoxButtons.OK);
+                progressBar.Visible = false;
+            };
+            backgroundWorker.RunWorkerAsync();
+        }
+        private void buttonAbout_Click(object sender, EventArgs e)
+        {
+            var about = new About();
+            about.ShowDialog();
+        }
+
         private string[] CleanInputFile(string inputFile)
         {
             string text = File.ReadAllText(inputFile);
@@ -90,7 +142,24 @@ namespace VcardToOutlook
             text = text.Replace("\r\n", "\n"); // change crlf to lf
             return text.Split('\n');
         }
+        private void linkLabelWebsite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("https://bbhcm.vn");
+        }
+        #endregion
 
+        #region Private code
+
+        private string NonUnicode(string text)
+        {
+            
+            for (int i = 0; i < sign.Length; i++)
+            {
+                text = text.Replace(sign[i], nosign[i]);
+                text = text.Replace(sign[i].ToUpper(), nosign[i].ToUpper());
+            }
+            return text;
+        }
         private void ClearOldVcfFiles(BackgroundWorker backgroundWorker, string folder)
         {
             DirectoryInfo di = new DirectoryInfo(folder);
@@ -140,6 +209,7 @@ namespace VcardToOutlook
                         int pos = line.IndexOf(quotedPrintable) + quotedPrintable.Length;
                         string text = line.Substring(pos).Replace(";", "");
                         string n = DecodeQuotedPrintables(text, "UTF-8");
+                        n = NonUnicode(n);
                         line = "N;CHARSET=utf-8:" + n;
                         if (string.IsNullOrWhiteSpace(name))
                         {
@@ -160,6 +230,7 @@ namespace VcardToOutlook
                         int pos = line.IndexOf(quotedPrintable) + quotedPrintable.Length;
                         string text = line.Substring(pos).Replace(";", "");
                         string fn = DecodeQuotedPrintables(text, "UTF-8");
+                        fn = NonUnicode(fn);
                         line = "FN;CHARSET=utf-8:" + fn;
                         if (string.IsNullOrWhiteSpace(name))
                         {
@@ -182,7 +253,9 @@ namespace VcardToOutlook
                     {
                         int pos = line.IndexOf(quotedPrintable) + quotedPrintable.Length;
                         string text = line.Substring(pos).Replace(";", "");
-                        line = "ORG;CHARSET=utf-8:" + DecodeQuotedPrintables(text, "UTF-8");
+                        string org = DecodeQuotedPrintables(text, "UTF-8");
+                        org = NonUnicode(org);
+                        line = "ORG;CHARSET=utf-8:" + org;
                     }
                 }
                 if (line.StartsWith("ORG:")) //company
@@ -229,40 +302,7 @@ namespace VcardToOutlook
             }
             return counter;
         }
-        private void buttonImport_Click(object sender, EventArgs e)
-        {
-            string outputFolder = textBoxOutput.Text;
-            bool clearOldContact = checkBoxClearOldContact.Checked;
-            ResetProgressbar();
-            var backgroundWorker = new BackgroundWorker()
-            {
-                WorkerReportsProgress = true
-            };
-            backgroundWorker.DoWork += (o, args) =>
-            {
-                var outlookApplication = new Outlook.Application();
-                if (clearOldContact)
-                    ClearOldContact(backgroundWorker, outlookApplication);
-                int counter = ImportContacts(backgroundWorker, outlookApplication, outputFolder);
-                args.Result = counter;
-            };
-            backgroundWorker.ProgressChanged += (o, args) =>
-            {
-                progressBar.Value = args.ProgressPercentage;
-            };
-            backgroundWorker.RunWorkerCompleted += (o, args) =>
-            {
-                progressBar.Value = 100;
-                MessageBox.Show(string.Format("Imported {0}contact(s) to outlook.", args.Result), "Success", MessageBoxButtons.OK);
-                progressBar.Visible = false;
-            };
-            backgroundWorker.RunWorkerAsync();
-        }
-        private void buttonAbout_Click(object sender, EventArgs e)
-        {
-            var about = new About();
-            about.ShowDialog();
-        }
+    
         private void ResetProgressbar()
         {
             progressBar.Visible = true;
@@ -307,14 +347,14 @@ namespace VcardToOutlook
             return counter;
         }
 
-        private static string CleanFileName(string fileName)
+        private string CleanFileName(string fileName)
         {
             string newFileName = fileName;
             var invalidChars = Path.GetInvalidFileNameChars();
             return invalidChars.Aggregate(newFileName, (current, c) => current.Replace(c.ToString(), ""));
         }
 
-        private static string DecodeQuotedPrintables(string input, string charSet)
+        private  string DecodeQuotedPrintables(string input, string charSet)
         {
             if (string.IsNullOrEmpty(charSet))
             {
@@ -347,17 +387,13 @@ namespace VcardToOutlook
             string output = enc.GetString(arr.ToArray());
             return output;
         }
-        private static byte[] StringToByteArray(string hex)
+        private byte[] StringToByteArray(string hex)
         {
             return Enumerable.Range(0, hex.Length)
                              .Where(x => x % 2 == 0)
                              .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                              .ToArray();
         }
-
-        private void linkLabelWebsite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Process.Start("https://bbhcm.vn");
-        }
+        #endregion
     }
 }
