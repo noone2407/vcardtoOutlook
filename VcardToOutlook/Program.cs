@@ -11,12 +11,6 @@ namespace VcardToOutlook
         [STAThread]
         static void Main()
         {
-            string[] args = Environment.GetCommandLineArgs();
-            if (args.Length == 2)
-            {
-                if (System.IO.File.Exists(args[1]))
-                    System.IO.File.Delete(args[1]);
-            }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainWindow());

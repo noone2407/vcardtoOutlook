@@ -92,6 +92,7 @@ namespace VcardToOutlook
             content += $"xcopy {extractedPath} {destinationPath} /c /q\r\n"; // copy all file in extracted folder to app folder
             content += $"del /q {extractedPath}\r\n"; // clean extracted folder and all content
             content += $"start {Path.Combine(destinationPath, exeName)} {scriptPath}\r\n"; // run new app
+            content += $"(goto) 2>nul & del \"%~f0\""; // selft delete update script
             File.WriteAllText(scriptPath, content);
             return scriptPath;
         }
