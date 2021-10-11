@@ -3,27 +3,15 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Xml;
-using static VcardToOutlook.GoogleDownloader;
 
-namespace VcardToOutlook
+namespace VcardToOutlook.AutoUpdate
 {
-    public class CheckUpdateResult
-    {
-        public bool Success { get; set; }
-        public Version Version { get; set; }
-        public string Url { get; set; }
-        public bool Mandatory { get; set; }
-    }
-    public class DownloadUpdateResult
-    {
-        public bool Success { get; set; }
-        public string DownloadPath { get; set; }
-    }
-    public class AutoUpdateHelper
+
+    internal class AutoUpdateHelper
     {
         const string xmlUpdateUrl = "https://docs.google.com/document/d/14j2KqWDLu3ePJWRGV37-ApZvxfStET7gjGHUZJOq4hw/export?format=txt";
         GoogleDownloader fileDownloader;
-        public AutoUpdateHelper()
+        internal AutoUpdateHelper()
         {
             fileDownloader = new GoogleDownloader();
             // This callback is triggered for DownloadFileAsync only
@@ -32,7 +20,7 @@ namespace VcardToOutlook
             fileDownloader.DownloadFileCompleted += FileDownloader_DownloadFileCompleted;
         }
 
-        public CheckUpdateResult CheckUpdate()
+        internal CheckUpdateResult CheckUpdate()
         {
             var result = new CheckUpdateResult();
             string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -54,7 +42,7 @@ namespace VcardToOutlook
             return result;
         }
 
-        public DownloadUpdateResult DownloadUpdate(string url)
+        internal DownloadUpdateResult DownloadUpdate(string url)
         {
             var result = new DownloadUpdateResult();
             string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -73,7 +61,7 @@ namespace VcardToOutlook
             return result;
         }
 
-        public string UnzipUpdate(string zipPath)
+        internal string UnzipUpdate(string zipPath)
         {
             string extractPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             if (Directory.Exists(extractPath))
@@ -83,21 +71,22 @@ namespace VcardToOutlook
             return extractPath;
         }
 
-        public string CreateUpdateScript(string extractedPath, string destinationPath, string exeName, int delayTime)
+        internal string CreateUpdateScript(string extractedPath, string destinationPath, string exeName, int delayTime)
         {
             string scriptPath = Path.Combine(Path.GetTempPath(), $"autoupdate_{Path.GetRandomFileName()}.bat");
             string content = $"@echo off\r\n"; // echo off
             content += $"timeout {delayTime} > NUL\r\n"; // delay before action
             content += $"del /q {destinationPath}\\*\r\n"; // clear all files in app folder
             content += $"xcopy {extractedPath} {destinationPath} /c /q\r\n"; // copy all file in extracted folder to app folder
-            content += $"del /q {extractedPath}\r\n"; // clean extracted folder and all content
+            content += $"del /q {extractedPath}\r\n"; // clean all contents of extracted folder
+            content += $"rmdir {extractedPath}\r\n"; // delete extracted folder
             content += $"start {Path.Combine(destinationPath, exeName)} {scriptPath}\r\n"; // run new app
             content += $"(goto) 2>nul & del \"%~f0\""; // selft delete update script
             File.WriteAllText(scriptPath, content);
             return scriptPath;
         }
 
-        private void FileDownloader_DownloadProgressChanged(object sender, DownloadProgress progress)
+        private void FileDownloader_DownloadProgressChanged(object sender, GoogleDownloader.DownloadProgress progress)
         {
             Debug.WriteLine("Progress changed " + progress.BytesReceived + " " + progress.TotalBytesToReceive);
         }

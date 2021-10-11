@@ -56,8 +56,11 @@
     <Compile Include="About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
-    <Compile Include="AutoUpdateHelper.cs" />
-    <Compile Include="GoogleDownloader.cs" />
+    <Compile Include="AutoUpdate\AutoUpdateScript.cs" />
+    <Compile Include="AutoUpdate\AutoUpdateHelper.cs" />
+    <Compile Include="AutoUpdate\CheckUpdateResult.cs" />
+    <Compile Include="AutoUpdate\DownloadUpdateResult.cs" />
+    <Compile Include="AutoUpdate\GoogleDownloader.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>

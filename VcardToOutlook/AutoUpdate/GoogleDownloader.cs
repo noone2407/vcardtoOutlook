@@ -5,19 +5,9 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-namespace VcardToOutlook
+namespace VcardToOutlook.AutoUpdate
 {
-	/* EXAMPLE USAGE
-	  GoogleDownloader fileDownloader = new GoogleDownloader();
-
-	  // This callback is triggered for DownloadFileAsync only
-	  fileDownloader.DownloadProgressChanged += ( sender, e ) => Console.WriteLine( "Progress changed " + e.BytesReceived + " " + e.TotalBytesToReceive );
-	  // This callback is triggered for both DownloadFile and DownloadFileAsync
-	  fileDownloader.DownloadFileCompleted += ( sender, e ) => Console.WriteLine( "Download completed" );
-
-	  fileDownloader.DownloadFileAsync( "https://INSERT_GOOGLEDRIVE_LINK_HERE", @"C:\downloadedFile.txt" );
-  */
-	public class GoogleDownloader : IDisposable
+	internal class GoogleDownloader : IDisposable
 	{
 		private const string GOOGLE_DRIVE_DOMAIN = "drive.google.com";
 		private const string GOOGLE_DRIVE_DOMAIN2 = "https://drive.google.com";
@@ -31,7 +21,7 @@ namespace VcardToOutlook
 		public delegate void DownloadProgressChangedEventHandler(object sender, DownloadProgress progress);
 
 		// Custom download progress reporting (needed for Google Drive)
-		public class DownloadProgress
+		internal class DownloadProgress
 		{
 			public long BytesReceived, TotalBytesToReceive;
 			public object UserState;
