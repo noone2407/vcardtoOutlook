@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using VcardToOutlook.Properties;
 using Outlook = NetOffice.OutlookApi;
@@ -11,6 +12,7 @@ namespace VcardToOutlook
     public partial class MainWindow : Form
     {
         string ContactFolder = "C:\\Contacts\\";
+        Version appVersion = new Version(Application.ProductVersion);
         public MainWindow()
         {
             InitializeComponent();
@@ -19,8 +21,11 @@ namespace VcardToOutlook
         {
             textBoxOutput.Text = ContactFolder;
             label6.Text = "";
+            labelTitle.Text = $"VCardToOutlook {appVersion.Major}.{appVersion.Minor}";
+            this.BringToFront();
             if (!Directory.Exists(ContactFolder))
                 Directory.CreateDirectory(ContactFolder);
+            RunCheckForUpdateBackground();
         }
 
         private void buttonSelectSource_Click(object sender, EventArgs e)
@@ -114,13 +119,49 @@ namespace VcardToOutlook
         {
             Process.Start("https://bbhcm.vn");
         }
-    
+
         private void ResetProgressbar()
         {
             progressBar.Visible = true;
             progressBar.Value = 0;
             progressBar.Minimum = 0;
             progressBar.Maximum = 100;
+        }
+
+        private void RunCheckForUpdateBackground()
+        {
+            (new Thread(new ThreadStart(this.CheckForUpdate))
+            {
+                IsBackground = true,
+                Priority = ThreadPriority.Normal
+            }).Start();
+        }
+        private void CheckForUpdate()
+        {
+            var autoUpdate = new AutoUpdateHelper();
+            var checkUpdateresult = autoUpdate.CheckUpdate();
+            if (!checkUpdateresult.Success)
+                return;
+            if (!(checkUpdateresult.Version > appVersion))
+                return;
+            if (MessageBox.Show($"Do you want to update to version {checkUpdateresult.Version.ToString()}?", "There is a new version!", MessageBoxButtons.YesNo) == DialogResult.No)
+                return;
+            var downloadUpdateResult = autoUpdate.DownloadUpdate(checkUpdateresult.Url);
+            if (!downloadUpdateResult.Success)
+            {
+                MessageBox.Show("Couldn't download the update", "Error");
+                return;
+            }
+            if (MessageBox.Show("Do you want to restart now?", "Restart", MessageBoxButtons.YesNo) == DialogResult.No)
+                return;
+            string extractPath = autoUpdate.UnzipUpdate(downloadUpdateResult.DownloadPath);
+            if (string.IsNullOrEmpty(extractPath))
+                return;
+            string scriptPath = autoUpdate.CreateUpdateScript(extractPath,Application.StartupPath,Application.ExecutablePath,1);
+            if (!File.Exists(scriptPath))
+                return;
+            Process.Start(scriptPath);
+            Application.Exit();
         }
     }
 }

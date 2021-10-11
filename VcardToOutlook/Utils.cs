@@ -5,7 +5,6 @@ using System.Text;
 using System.IO;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
-using VcardToOutlook.Properties;
 using Outlook = NetOffice.OutlookApi;
 using System.Diagnostics;
 using NetOffice.OutlookApi.Enums;
