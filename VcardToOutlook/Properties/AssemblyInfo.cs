@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("VcardToOutlook")]
-[assembly: AssemblyDescription("VcardToOutlook 1.1\r\nSplit VCF file to multiple files and export to outlook.\r\nEmail:xdung24@gmail.com\r\nWebsite:https://bbhcm.vn")]
+[assembly: AssemblyDescription("VcardToOutlook\r\nSplit VCF file to multiple files and export to outlook.\r\nEmail:xdung24@gmail.com\r\nWebsite:https://bbhcm.vn")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Dung Le Ltd")]
 [assembly: AssemblyProduct("VcardToOutlook")]
